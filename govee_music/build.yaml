@@ -1,0 +1,8 @@
+# Required for a LOCAL add-on. Without this file Supervisor does not pass BUILD_FROM, and the build
+# dies with `base name (${BUILD_FROM}) should not be blank` - the Dockerfile itself is fine.
+#
+# The Home Assistant base images bring s6-overlay and bashio, which run.sh depends on for
+# `#!/usr/bin/with-contenv bashio` and bashio::config.
+build_from:
+  aarch64: ghcr.io/home-assistant/aarch64-base:latest
+  amd64: ghcr.io/home-assistant/amd64-base:latest

@@ -1,0 +1,52 @@
+# Local Home Assistant add-on: runs the Govee music bridge ON the Pi.
+#
+# Why an add-on rather than a script under the SSH terminal: Supervisor starts it at boot, restarts it
+# if it dies, and injects SUPERVISOR_TOKEN so no long-lived Home Assistant token has to be stored.
+#
+# host_dbus    - BlueZ lives on the host D-Bus; without it there is no BLE palette write.
+# host_network - the Govee LAN API needs multicast on 4001/4002 and unicast to 4003.
+#
+# Do NOT add `watchdog: null` - Supervisor validates it as a string and rejects the whole file,
+# silently skipping the add-on ("expected string or buffer for dictionary value @ data['watchdog']").
+# Omit the key instead. Likewise armv7/armhf are deprecated arch values on current Supervisor, and
+# no filesystem map is needed because the daemon reads nothing from /config.
+name: Govee Music Bridge
+version: "1.1.0"
+slug: govee_music
+url: https://github.com/artur-safonov/govee-music-bridge
+description: >-
+  Colour-locked Govee music mode for H6076 floor lamps. Selecting a music mode arms DreamView and
+  paints the chosen colour over BLE; a colour change repaints the palette without dropping music.
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: services
+boot: auto
+homeassistant_api: true
+host_dbus: true
+host_network: true
+privileged:
+  - NET_ADMIN
+udev: true
+options:
+  govee_api_key: ""
+  sku: H6076
+  lamps: []
+  mode_select: input_select.govee_music_mode
+  music_guard: input_boolean.govee_music_active
+  sensitivity_entity: input_number.govee_music_sensitivity
+schema:
+  govee_api_key: password
+  sku: str
+  lamps:
+    - name: str
+      entity_id: match(^light\.[a-z0-9_]+$)
+      device_id: match(^([0-9A-Fa-f]{2}:){7}[0-9A-Fa-f]{2}$)
+  mode_select: match(^input_select\.[a-z0-9_]+$)
+  music_guard: match(^input_boolean\.[a-z0-9_]+$)
+  sensitivity_entity: match(^input_number\.[a-z0-9_]+$)
+  group_color_script: str?
+  group_light: str?
+  toggle_script: str?
+  power_intent: str?
